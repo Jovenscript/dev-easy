@@ -6,6 +6,7 @@ const SYNC=(function(){
   var cfg=window.DEVEASY_FIREBASE||null;if(cfg&&(!cfg.apiKey||!cfg.projectId))cfg=null;
   var s={state:cfg?'signedout':'off',user:null,last:0,err:''};
   var auth=null,db=null,ready=null,unM=null,unN=null,flushT=0,busy=false,first={m:false,n:false};
+  var exiting=false,lastErrToast='';   /* exiting: o próprio usuário tocou em Sair (para a tela de login saber o motivo) */
   var fail={n:0,at:0},lastSig='';   /* falhas seguidas ao carregar o Firebase: espera cada vez mais antes de tentar de novo (nunca em laço) */
   function espera(){return Math.min(300000,15000*Math.pow(2,Math.max(0,fail.n-1)))}
   function sig(){return s.state+'|'+s.err+'|'+(s.user?s.user.uid:'')+'|'+s.last+'|'+Object.keys(STORE.dirtyList()).length}
@@ -27,12 +28,14 @@ const SYNC=(function(){
     if(c==='auth/web-storage-unsupported')return 'O navegador está bloqueando o armazenamento do site (aba anônima ou cookies bloqueados). Libere e tente de novo.';
     if(c==='auth/too-many-requests')return 'Muitas tentativas seguidas. Espere um pouco e tente de novo.';
     if(c==='auth/invalid-api-key'||c==='auth/api-key-not-valid.-please-pass-a-valid-api-key.')return 'A chave do Firebase no arquivo firebase-config.js está incorreta.';
-    if(c==='permission-denied')return 'O Firestore recusou o acesso. Confira se as regras do arquivo firestore.rules foram publicadas.';
+    if(c==='permission-denied')return 'O Firestore recusou o acesso. No console do Firebase, confira se o banco foi criado (Firestore Database → Criar banco de dados) e se as regras do arquivo firestore.rules foram publicadas (aba Regras → Publicar).';
     if(c==='failed-precondition'||c==='not-found')return 'O banco Firestore ainda não foi criado no console do Firebase (Firestore Database → Criar banco de dados).';
     if(c==='unavailable')return 'Sem conexão com a nuvem agora. Tento de novo sozinho.';
     return (c?c+': ':'')+m.slice(0,160);
   }
   function ui(){
+    if(s.state==='ok')lastErrToast='';
+    if(typeof GATE!=='undefined')GATE.update();
     if(typeof UI!=='undefined'){UI.syncBadge();UI.side()}
     if(typeof S!=='undefined'&&S.view==='conta'&&typeof render==='function'){
       var sg=sig();if(sg===lastSig)return;lastSig=sg;
@@ -50,14 +53,24 @@ const SYNC=(function(){
       try{db.settings({ignoreUndefinedProperties:true,experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
       auth.onAuthStateChanged(onUser,onErr);
       fail.n=0;
+      if(!s.user){if(s.state==='offline'||s.state==='error')s.state='signedout';s.err=''}      /* o aviso de "não consegui falar com o Firebase" some quando a conexão volta */
     }).catch(function(e){ready=null;fail.n++;fail.at=Date.now();throw e});
     return ready;
   }
   function falhou(e){if(e&&e.quiet)return;onErr(e)}
   function onUser(u){
-    if(!u){stop();s.user=null;s.state='signedout';ui();return}
+    if(!u){
+      var saiu=exiting;exiting=false;
+      stop();s.user=null;s.state='signedout';if(saiu)s.err='';
+      try{if(localStorage.getItem(FLAG)==='1')localStorage.setItem(FLAG,'0')}catch(e){}      /* tinha entrado antes e a sessão sumiu: da próxima vez já abre a tela de login */
+      ui();
+      if(typeof GATE!=='undefined')GATE.signedOut(saiu);
+      return;
+    }
     s.user={uid:u.uid,name:u.displayName||'',email:u.email||'',photo:u.photoURL||''};
+    s.err='';
     try{localStorage.setItem(FLAG,'1')}catch(e){}
+    if(typeof GATE!=='undefined')GATE.signedIn(s.user);
     start(u.uid);
   }
   function onErr(e){
@@ -65,6 +78,7 @@ const SYNC=(function(){
     var c=(e&&e.code)||'';
     s.state=(!navigator.onLine||c==='unavailable'||c==='sdk-offline')?'offline':'error';
     ui();
+    if(s.user&&s.state==='error'&&s.err&&s.err!==lastErrToast&&typeof UI!=='undefined'){lastErrToast=s.err;UI.toast(s.err,{ms:10000})}
     if(s.user&&(s.state==='offline'||c==='aborted'))schedule(15000);
   }
   function stop(){
@@ -164,20 +178,23 @@ const SYNC=(function(){
     var want=false;try{want=localStorage.getItem(FLAG)==='1'}catch(e){}
     if(want)ensure().catch(falhou);
   }
+  /* Devolve uma promessa que termina quando o login acaba (deu certo, foi cancelado ou deu erro). A janela do Google (popup) precisa ser aberta
+     direto no toque do botão: por isso o SDK é carregado antes (prepare) e aqui não se espera por nada. */
   function signIn(){
     s.err='';
-    if(!cfg)return;
+    if(!cfg)return Promise.resolve();
     if(!auth){
       s.err='Preparando o login… toque em Entrar de novo em um instante.';ui();
-      ensure(true).then(function(){s.err='';ui()},falhou);return;
+      return ensure(true).then(function(){s.err='';ui()},function(e){falhou(e)});
     }
     var p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
-    auth.signInWithPopup(p).catch(function(e){s.err=friendly(e);if(!s.user)s.state='signedout';ui()});
+    return auth.signInWithPopup(p).then(function(){},function(e){s.err=friendly(e);if(!s.user)s.state='signedout';ui()});
   }
   function signOut(){
     if(!auth)return;
     try{localStorage.setItem(FLAG,'0')}catch(e){}
-    auth.signOut().catch(function(e){onErr(e)});
+    exiting=true;
+    auth.signOut().catch(function(e){exiting=false;onErr(e)});
   }
   function syncNow(){
     if(!s.user)return;
@@ -195,6 +212,9 @@ const SYNC=(function(){
     }
   }
   return {init:init,badge:badge,signIn:signIn,signOut:signOut,syncNow:syncNow,preload:function(){lastSig=sig();if(cfg&&!auth)ensure().then(ui,falhou)},
+    /* carrega o Firebase com antecedência (a tela de login chama ao abrir). Sempre termina; dá true se ficou pronto. */
+    prepare:function(force){return cfg?ensure(force).then(function(){ui();return true},function(e){falhou(e);ui();return false}):Promise.resolve(false)},
+    ready:function(){return !!auth},
     configured:function(){return !!cfg},user:function(){return s.user},state:function(){return s.state},error:function(){return s.err},last:function(){return s.last},
     pending:function(){return Object.keys(STORE.dirtyList()).length},projectId:function(){return cfg?cfg.projectId:''},
     firstName:function(){return s.user&&s.user.name?s.user.name.split(/\s+/)[0]:''},_s:s};

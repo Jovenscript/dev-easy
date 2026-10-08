@@ -21,7 +21,8 @@ Object.assign(ICON,(function(){
     pen:i('<path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z"/>'),
     link:i('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.8 6.5"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1.2-1.2"/>'),
     play2:i('<path d="M8 5.5v13l11-6.5z"/>'),
-    search:i('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>')
+    search:i('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>'),
+    user:i('<circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>')
   };
 })());
 const LOGO='<svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lgx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2DD4BF"/><stop offset="1" stop-color="#60A5FA"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="#0B1118"/><rect x=".75" y=".75" width="30.5" height="30.5" rx="8.25" fill="none" stroke="url(#lgx)" stroke-opacity=".6" stroke-width="1.5"/><path d="M13.5 10.5 8 16l5.5 5.5" fill="none" stroke="url(#lgx)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 10.5 24 16l-5.5 5.5" fill="none" stroke="#FB923C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -66,7 +67,14 @@ const UI=(function(){
     h+=nv('#/voz','voz','Voz e áudio',ICON.voz,S.view==='voz');
     var sb=(typeof SYNC!=='undefined')?SYNC.badge():{cls:'off',text:'Só neste aparelho'};
     h+=nv('#/conta','conta','Conta e nuvem',ICON.cloud,S.view==='conta','<i class="sdot '+sb.cls+'" title="'+esc(sb.text)+'"></i>');
-    h+='</nav><div class="sb-foot"><button class="sbn" data-act="tema" aria-label="Tema: '+themeLabel(theme())+'. Toque para trocar">'+themeIcon(theme())+'<span class="sbl">Tema: '+themeLabel(theme())+'</span></button><p class="sb-ver">'+DATA.length+' fichas · áudio de '+(typeof AUDIOMAP!=='undefined'?Object.keys(AUDIOMAP).filter(function(k){return k.charAt(0)!=='_'}).length:0)+'</p></div>';
+    var cfgOn=(typeof SYNC!=='undefined'&&SYNC.configured()),u=cfgOn?SYNC.user():null,chip='';
+    if(u){
+      var nm=u.name||u.email||'Conta Google',ini=nm.charAt(0).toUpperCase();
+      chip='<a class="sbn me" href="#/conta" data-act="conta" aria-label="Minha conta: '+esc(nm)+'. '+esc(sb.text)+'">'+(u.photo?'<img src="'+esc(u.photo)+'" alt="" width="30" height="30" referrerpolicy="no-referrer" data-ini="'+esc(ini)+'">':'<span class="av">'+esc(ini)+'</span>')+'<span class="sbl"><b>'+esc(nm.split(/\s+/)[0])+'</b><small>'+esc(sb.text)+'</small></span><i class="sdot '+sb.cls+'" aria-hidden="true"></i></a>';
+    }else if(cfgOn){
+      chip='<button class="sbn me" data-act="gate-open">'+ICON.user+'<span class="sbl"><b>Entrar</b><small>para sincronizar</small></span></button>';
+    }
+    h+='</nav><div class="sb-foot">'+chip+'<button class="sbn" data-act="tema" aria-label="Tema: '+themeLabel(theme())+'. Toque para trocar">'+themeIcon(theme())+'<span class="sbl">Tema: '+themeLabel(theme())+'</span></button><p class="sb-ver">'+DATA.length+' fichas · áudio de '+(typeof AUDIOMAP!=='undefined'?Object.keys(AUDIOMAP).filter(function(k){return k.charAt(0)!=='_'}).length:0)+'</p></div>';
     el.innerHTML=h;
   }
   function badges(){side();syncBadge()}
@@ -102,6 +110,7 @@ const UI=(function(){
     if(typeof DASH!=='undefined'&&S.view==='home')DASH.after();
     if(typeof NOTES!=='undefined')NOTES.after();
     if(typeof ACC!=='undefined')ACC.after();
+    scrollFocus();
   }
   /* baixar um texto como arquivo e copiar para a área de transferência */
   function download(name,text,type){
@@ -128,8 +137,18 @@ const UI=(function(){
     el.hidden=false;el.classList.remove('in');void el.offsetWidth;el.classList.add('in');
     toastT=setTimeout(function(){el.hidden=true;toastFn=null},opt.ms||5000);
   }
+  /* tabelas que rolam para os lados precisam poder receber foco (e rolar com as setas) para quem usa só o teclado */
+  var sfT=0;
+  function scrollFocus(){
+    Array.prototype.forEach.call(document.querySelectorAll('#view .scrollx:not([tabindex])'),function(el){
+      if(el.scrollWidth>el.clientWidth+1){el.tabIndex=0;el.setAttribute('role','group');el.setAttribute('aria-label','Conteúdo que rola para os lados')}
+    });
+  }
+  function scrollFocusSoon(){clearTimeout(sfT);sfT=setTimeout(scrollFocus,200)}
   function init(){
     setTheme(theme());
+    window.addEventListener('resize',scrollFocusSoon);
+    var vw=$('#view');if(vw&&window.MutationObserver){try{new MutationObserver(scrollFocusSoon).observe(vw,{childList:true,subtree:true})}catch(e){}}
     /* altura do player (que muda de 1 para 2 linhas conforme a largura): o aviso e o botão flutuante ficam sempre acima dele */
     var pl=$('#player');
     function ph(){document.documentElement.style.setProperty('--ph',(pl.hidden?0:Math.round(pl.getBoundingClientRect().height))+'px')}

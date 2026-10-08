@@ -28,9 +28,9 @@ img{max-width:100%}
   --bg:#EDF2F8; --bg2:#E2E9F2; --solid:#FFFFFF; --solid2:#F3F6FA;
   --panel:rgba(255,255,255,.66); --panel2:rgba(14,28,48,.075);
   --ink:#0E1726; --muted:#4A5B6E; --line:rgba(14,28,48,.15); --line2:rgba(14,28,48,.28); --grid:rgba(14,28,48,.1);
-  --accent:#0B7F74; --accent-ink:#FFFFFF; --accent-soft:rgba(11,127,116,.12);
+  --accent:#08746A; --accent-ink:#FFFFFF; --accent-soft:rgba(11,127,116,.12);
   --amber:#9A5B00; --amber-ink:#6E4300; --amber-bg:#FFF1CF; --amber-line:#E4BE62;
-  --ok:#15803D; --ok-bg:#D8F3E2; --bad:#B3261E; --bad-bg:#FBE3E0;
+  --ok:#126F36; --ok-bg:#D8F3E2; --bad:#B3261E; --bad-bg:#FBE3E0;
   --card-bg:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.58));
   --card-line:rgba(14,28,48,.1);
   --card-shadow:0 16px 34px -22px rgba(20,40,70,.4),inset 0 1px 0 rgba(255,255,255,.95);
@@ -41,17 +41,17 @@ img{max-width:100%}
   --bg:#EDF2F8; --bg2:#E2E9F2; --solid:#FFFFFF; --solid2:#F3F6FA;
   --panel:rgba(255,255,255,.66); --panel2:rgba(14,28,48,.075);
   --ink:#0E1726; --muted:#4A5B6E; --line:rgba(14,28,48,.15); --line2:rgba(14,28,48,.28); --grid:rgba(14,28,48,.1);
-  --accent:#0B7F74; --accent-ink:#FFFFFF; --accent-soft:rgba(11,127,116,.12);
+  --accent:#08746A; --accent-ink:#FFFFFF; --accent-soft:rgba(11,127,116,.12);
   --amber:#9A5B00; --amber-ink:#6E4300; --amber-bg:#FFF1CF; --amber-line:#E4BE62;
-  --ok:#15803D; --ok-bg:#D8F3E2; --bad:#B3261E; --bad-bg:#FBE3E0;
+  --ok:#126F36; --ok-bg:#D8F3E2; --bad:#B3261E; --bad-bg:#FBE3E0;
   --card-bg:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.58));
   --card-line:rgba(14,28,48,.1);
   --card-shadow:0 16px 34px -22px rgba(20,40,70,.4),inset 0 1px 0 rgba(255,255,255,.95);
   --glow1:rgba(13,148,136,.16); --glow2:rgba(70,110,230,.13); --glow3:rgba(251,146,60,.12);
   color-scheme:light}}
 *{box-sizing:border-box}
-html{background:var(--bg)}
-body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--fb);-webkit-text-size-adjust:100%;min-height:100vh}
+html{background:var(--bg)}   /* o fundo fica no html; o body é transparente para os brilhos de body::before (z-index:-1) aparecerem atrás do vidro */
+body{background:transparent;color:var(--ink);font:16px/1.55 var(--fb);-webkit-text-size-adjust:100%;min-height:100vh}
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 560px at 6% -10%,var(--glow1),transparent 62%),radial-gradient(820px 620px at 104% 4%,var(--glow2),transparent 62%),radial-gradient(760px 560px at 55% 112%,var(--glow3),transparent 62%)}
 ::selection{background:var(--accent-soft)}
 *{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}

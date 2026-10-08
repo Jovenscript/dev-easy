@@ -165,12 +165,12 @@ const DASH=(function(){
     return h+'</ul></div>';
   }
   function areaTable(areas){
-    var h='<div class="gl card"><div class="gh"><div><h2 class="gt">Áreas</h2><p class="gsub">Toque numa área para ver as fichas</p></div></div><div class="atbl" role="table" aria-label="Progresso por área"><div class="trow th" role="row"><span role="columnheader">Área</span><span role="columnheader" class="c-n">Entendidas</span><span role="columnheader" class="c-p">Progresso</span></div>';
+    var h='<div class="gl card"><div class="gh"><div><h2 class="gt">Áreas</h2><p class="gsub">Toque numa área para ver as fichas</p></div></div><ul class="atbl" aria-label="Progresso por área"><li class="trow th" aria-hidden="true"><span>Área</span><span class="c-n">Entendidas</span><span class="c-p">Progresso</span></li>';
     areas.forEach(function(c){
       var ids=catItems(c.id).map(function(x){return x.id}),s=seen(ids),p=ids.length?Math.round(s*100/ids.length):0;
-      h+='<a class="trow" role="row" href="#/area/'+c.id+'" data-act="cat" data-id="'+c.id+'" style="--c:'+c.c+';--ci:'+c.ci+'"><span class="c-a"><span class="plate">'+c.code+'</span><span class="an"><b>'+nb(esc(c.name))+'</b><small>'+esc(c.desc)+'</small></span></span><span class="c-n"><b>'+s+'</b><i>/'+ids.length+'</i></span><span class="c-p"><span class="pbar"><i style="width:'+p+'%"></i></span><em>'+p+'%</em></span></a>';
+      h+='<li><a class="trow" href="#/area/'+c.id+'" data-act="cat" data-id="'+c.id+'" aria-label="'+esc(c.name)+': '+s+' de '+ids.length+' fichas entendidas ('+p+'%)" style="--c:'+c.c+';--ci:'+c.ci+'"><span class="c-a"><span class="plate">'+c.code+'</span><span class="an"><b>'+nb(esc(c.name))+'</b><small>'+esc(c.desc)+'</small></span></span><span class="c-n"><b>'+s+'</b><i>/'+ids.length+'</i></span><span class="c-p"><span class="pbar"><i style="width:'+p+'%"></i></span><em>'+p+'%</em></span></a></li>';
     });
-    return h+'</div></div>';
+    return h+'</ul></div>';
   }
   function trailsBlock(){
     if(!TRAILS.length)return '';

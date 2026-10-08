@@ -36,6 +36,7 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 - Para permitir **só o seu e-mail**, troque a regra por `request.auth.token.email == 'SEU_EMAIL_AQUI'` (não escreva o e-mail em arquivo público; cole direto no console do Firebase).
 
 ## Como usar
+- **Tela de login**: na primeira vez (ou depois de **Sair**) aparece a tela de entrada. **Entrar com Google** guarda tudo na nuvem e leva para qualquer aparelho. **Continuar sem entrar** usa só este aparelho (útil se a rede do trabalho bloquear o Google); dá para entrar depois pelo menu lateral. Quem já entrou abre direto.
 - **Já entendi / Favoritar**: marcam o seu progresso.
 - **Anotar**: caixa "Minhas anotações" no fim de cada ficha, salva sozinha. Todas ficam em **Anotações** (com busca, baixar `.md` e copiar tudo).
 - **Marcar onde parei**: botão no topo da ficha, botão flutuante **Marcar aqui** (aparece quando você rola) e botão no player de áudio. Guarda a parte da ficha e, se estiver ouvindo, o segundo do áudio. Fica em **Marcadores**, onde dá para renomear, apagar (com Desfazer) e **ouvir a partir dali**.
@@ -52,7 +53,7 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 | `index.html` | A página única. A lista de scripts é gerada, não edite à mão. |
 | `js/4x` a `js/7x` | As fichas, por área. Cada arquivo é um pedaço do catálogo. |
 | `js/10` a `js/17` | As demonstrações (widgets e quadros). |
-| `js/19` a `js/27` | O app: guardar dados, voz, telas, painel, anotações, conta, nuvem. |
+| `js/19` a `js/28` | O app: guardar dados, voz, telas, painel, anotações, conta, nuvem e tela de login. |
 | `css/` e `fonts/` | Visual e fontes (as fontes ficam no projeto, nada vem do Google Fonts). |
 | `audio/` | Um MP3 por ficha + um `.json` com a "impressão digital" do texto. |
 | `firebase-config.js`, `firestore.rules` | Nuvem. |
@@ -64,6 +65,7 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 **Se mudar o texto de uma ficha**, o áudio dela fica desatualizado. Veja `tools/audio/LEIA-ME.md`.
 
 ## Limites que você deve saber
+- O guia é **público**: qualquer pessoa com o endereço lê as fichas (o site é só arquivos no GitHub). O login protege apenas as **suas** anotações, marcadores e progresso na nuvem, não o texto do guia.
 - Os dados do guia e das anotações ficam **no navegador de cada aparelho** até você entrar com o Google. Limpar os dados do site apaga tudo que não estiver na nuvem ou em backup.
 - Se duas pessoas/aparelhos mudarem a **mesma** anotação, vale a edição mais recente (a outra é substituída). Aparelhos com relógio muito errado podem confundir isso.
 - O login com Google precisa de internet e de pop-ups liberados. Em redes de empresa que bloqueiam o Google, a nuvem não conecta (o guia segue funcionando no aparelho).

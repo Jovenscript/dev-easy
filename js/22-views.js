@@ -48,7 +48,7 @@ function vEntry(){
   h+=sec('oq','<h2 class="eyebrow">O que é</h2><p>'+rich(x.oq)+'</p>');
   h+=sec('an','<h2 class="eyebrow">Analogia</h2><p>'+rich(x.an)+'</p>','ana');
   h+=sec('pq','<h2 class="eyebrow">Para que serve</h2><ul>'+x.pq.map(function(p){return '<li>'+rich(p)+'</li>'}).join('')+'</ul>');
-  if(x.ex)h+=sec('ex','<h2 class="eyebrow">Na prática</h2><div class="code"><header><span>'+esc(x.ex[0])+'</span><button data-act="copy">Copiar</button></header><pre>'+esc(x.ex[1])+'</pre></div>'+(x.ex[2]?'<p class="note">'+rich(x.ex[2])+'</p>':''));
+  if(x.ex)h+=sec('ex','<h2 class="eyebrow">Na prática</h2><div class="code"><header><span>'+esc(x.ex[0])+'</span><button data-act="copy">Copiar</button></header><pre role="region" tabindex="0" aria-label="Código: '+esc(x.ex[0])+'">'+esc(x.ex[1])+'</pre></div>'+(x.ex[2]?'<p class="note">'+rich(x.ex[2])+'</p>':''));
   if(x.demo)h+=sec('demo','<h2 class="eyebrow">Veja funcionando</h2><div class="demo" data-demo="'+x.demo+'"></div>');
   if(x.alt)h+=sec('alt','<h2 class="eyebrow">Alternativas e parecidos</h2><p>'+rich(x.alt)+'</p>');
   if(x.rel.length)h+=sec('rel','<h2 class="eyebrow">Veja também</h2><div class="rel">'+x.rel.map(function(r){return '<button data-act="open" data-id="'+r+'" data-ctx="cat:'+byId[r].cat+'">'+esc(byId[r].name)+'</button>'}).join('')+'</div>');
@@ -212,4 +212,5 @@ function boot(){
   var y0=(hs&&hs.y)||0;if(y0)window.scrollTo(0,y0);
   var sT=0;window.addEventListener('scroll',function(){clearTimeout(sT);sT=setTimeout(function(){try{if(HOK)history.replaceState(Object.assign({},history.state||stateNow(),{y:window.scrollY||0}),'')}catch(e){}},600)},{passive:true});
   if(typeof SYNC!=='undefined')SYNC.init();
+  if(typeof GATE!=='undefined')GATE.init();
 }
