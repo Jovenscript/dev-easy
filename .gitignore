@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+# arquivos pesados ou gerados que só servem para regravar o áudio (veja tools/audio/LEIA-ME.md)
+tools/audio/spoken.json
+tools/audio/vits-piper-pt_BR-faber-medium/
+tools/audio/*.onnx
+tools/audio/*.bin
+tools/audio/*.tar.bz2

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DEV EASY</title>
+<meta name="description" content="DEV EASY: guia de tecnologias em linguagem simples, com áudio, demos, anotações e marcadores.">
+<meta name="theme-color" content="#080B11">
+<script>/* tema antes de desenhar a página, para não piscar */try{document.documentElement.dataset.theme=localStorage.getItem("dev-easy-theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DEV EASY">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dash.css">
+</head>
+<body>
+<div id="app">
+<aside class="side" id="side" aria-label="Menu"></aside>
+<div class="scrim" id="scrim" data-act="menu-close" hidden></div>
+<div class="mainc">
+<header class="top"><div class="bar">
+  <button class="ib menu" data-act="menu" aria-label="Abrir menu" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button class="brand" data-act="home" aria-label="DEV EASY, início">DEV <b>EASY</b></button>
+  <div class="search"><input id="q" type="search" placeholder="Buscar: docker, api, css…  ( / )" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Buscar tecnologia"></div>
+  <button class="syncst off" id="syncst" data-act="conta" aria-label="Estado da nuvem"></button>
+  <span class="count" id="count" aria-live="polite" title="Fichas entendidas"></span>
+</div></header>
+<main class="wrap" id="view"></main>
+</div>
+<button class="fab" id="fab" data-act="mk-add" aria-label="Marcar onde parei" hidden></button>
+<div class="player" id="player" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<!-- Firebase (sincronização). Deixe vazio para usar só neste aparelho. Veja o README. -->
+<script src="firebase-config.js"></script>
+<!-- O código do app. Os arquivos carregam em ordem alfabética (19-store antes de 20-core etc.). Para incluir um arquivo novo: node tools/mkindex.js -->
+<!--scripts:start-->
+<script src="js/00-prelude.js"></script>
+<script src="js/05-pron.js"></script>
+<script src="js/05-pron2.js"></script>
+<script src="js/10-widgets.js"></script>
+<script src="js/12-widgets2.js"></script>
+<script src="js/13-widgets3.js"></script>
+<script src="js/14-widgets4.js"></script>
+<script src="js/14-widgets5.js"></script>
+<script src="js/14-widgets6.js"></script>
+<script src="js/14-widgets7.js"></script>
+<script src="js/14-widgets8.js"></script>
+<script src="js/14-widgets9.js"></script>
+<script src="js/14-widgetsa.js"></script>
+<script src="js/14-widgetsb.js"></script>
+<script src="js/14-widgetsc.js"></script>
+<script src="js/15-frames.js"></script>
+<script src="js/16-frames2.js"></script>
+<script src="js/16-frames3.js"></script>
+<script src="js/16-frames4.js"></script>
+<script src="js/18-audiomap.js"></script>
+<script src="js/19-store.js"></script>
+<script src="js/20-core.js"></script>
+<script src="js/21-voice.js"></script>
+<script src="js/22-views.js"></script>
+<script src="js/23-shell.js"></script>
+<script src="js/24-dash.js"></script>
+<script src="js/25-notes.js"></script>
+<script src="js/26-conta.js"></script>
+<script src="js/27-sync.js"></script>
+<script src="js/40-base.js"></script>
+<script src="js/41-front.js"></script>
+<script src="js/42-lang.js"></script>
+<script src="js/43-back.js"></script>
+<script src="js/44-ops.js"></script>
+<script src="js/45-dados.js"></script>
+<script src="js/46-dados2.js"></script>
+<script src="js/47-seg.js"></script>
+<script src="js/48-seg2.js"></script>
+<script src="js/49-seg3.js"></script>
+<script src="js/50-seg4.js"></script>
+<script src="js/51-ia.js"></script>
+<script src="js/52-ia2.js"></script>
+<script src="js/53-ia3.js"></script>
+<script src="js/54-ia4.js"></script>
+<script src="js/55-ia5.js"></script>
+<script src="js/56-ia6.js"></script>
+<script src="js/60-ind.js"></script>
+<script src="js/61-ind2.js"></script>
+<script src="js/62-ind3.js"></script>
+<script src="js/63-ind4.js"></script>
+<script src="js/64-ind5.js"></script>
+<script src="js/80-trails.js"></script>
+<script src="js/99-boot.js"></script>
+<!--scripts:end-->
+<script>
+/* Instalar como app e abrir mais rápido (só funciona em https ou localhost) */
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+}
+</script>
+</body>
+</html>
