@@ -42,6 +42,7 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 - **Marcar onde parei**: botão no topo da ficha, botão flutuante **Marcar aqui** (aparece quando você rola) e botão no player de áudio. Guarda a parte da ficha e, se estiver ouvindo, o segundo do áudio. Fica em **Marcadores**, onde dá para renomear, apagar (com Desfazer) e **ouvir a partir dali**.
 - **Continuar de onde parei**: automático. O painel mostra a última ficha e o ponto exato.
 - **Voz e áudio**: voz gravada (as 358 fichas) ou a voz do aparelho. Velocidade e pausa ajustáveis.
+- **Jogos**: menu lateral → **Praticar → Jogos** (ou o cartão no topo do painel). Lições curtas de Python em forma de jogo (Codivara). O progresso do jogo fica neste aparelho e é separado do progresso das fichas. Para adicionar lições, veja `jogos/LEIAME.md`.
 - **Tema**: escuro, claro ou automático (menu lateral).
 - **Backup**: em **Conta e nuvem** dá para baixar e restaurar um arquivo com tudo que é seu.
 - **Instalar como app**: em **Conta e nuvem** (ou pelo menu do navegador). Depois da primeira visita o guia abre sem internet; o áudio gravado precisa de internet, e sem ela o app usa a voz do aparelho.
@@ -56,6 +57,7 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 | `js/19` a `js/28` | O app: guardar dados, voz, telas, painel, anotações, conta, nuvem e tela de login. |
 | `css/` e `fonts/` | Visual e fontes (as fontes ficam no projeto, nada vem do Google Fonts). |
 | `audio/` | Um MP3 por ficha + um `.json` com a "impressão digital" do texto. |
+| `jogos/` | A página de jogos (Codivara): um único `index.html` com lições de Python. Veja `jogos/LEIAME.md`. |
 | `firebase-config.js`, `firestore.rules` | Nuvem. |
 | `sw.js`, `manifest.webmanifest`, `icons/` | App instalável e modo sem internet. |
 | `tools/` | Servidor local, gerador de índice, ferramentas de áudio. |

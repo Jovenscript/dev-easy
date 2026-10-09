@@ -22,7 +22,8 @@ Object.assign(ICON,(function(){
     link:i('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11.8 6.5"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1.2-1.2"/>'),
     play2:i('<path d="M8 5.5v13l11-6.5z"/>'),
     search:i('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>'),
-    user:i('<circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>')
+    user:i('<circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>'),
+    game:i('<path d="M7.5 8h9A4.5 4.5 0 0 1 21 12.6l-.5 3.4a2.6 2.6 0 0 1-4.5 1.4L14.7 16H9.3L8 17.4A2.6 2.6 0 0 1 3.5 16L3 12.6A4.5 4.5 0 0 1 7.5 8z"/><path d="M8.2 10.8v3.2M6.6 12.4h3.2"/><circle cx="15.7" cy="11.6" r=".5"/><circle cx="17.7" cy="13.4" r=".5"/>')
   };
 })());
 const LOGO='<svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lgx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2DD4BF"/><stop offset="1" stop-color="#60A5FA"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="#0B1118"/><rect x=".75" y=".75" width="30.5" height="30.5" rx="8.25" fill="none" stroke="url(#lgx)" stroke-opacity=".6" stroke-width="1.5"/><path d="M13.5 10.5 8 16l5.5 5.5" fill="none" stroke="url(#lgx)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 10.5 24 16l-5.5 5.5" fill="none" stroke="#FB923C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -60,6 +61,8 @@ const UI=(function(){
       var ids=catItems(c.id).map(function(x){return x.id});
       h+=nv('#/area/'+c.id,'cat',nb(esc(c.name)),'<i class="dot" aria-hidden="true"></i>',cc===c.id,'<small class="cnt">'+seen(ids)+'/'+ids.length+'</small>',c.id,'--c:'+c.c);
     });
+    h+='<p class="sb-h">Praticar</p>';
+    h+='<a class="sbn" href="jogos/">'+ICON.game+'<span class="sbl">Jogos</span><small class="cnt">Python</small></a>';
     h+='<p class="sb-h">Meu espaço</p>';
     h+=nv('#/notas','notas','Anotações',ICON.note,S.view==='notas','<small class="cnt">'+nn+'</small>');
     h+=nv('#/marcadores','marcas','Marcadores',ICON.mark,S.view==='marcas','<small class="cnt">'+mm+'</small>');

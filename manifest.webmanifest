@@ -16,6 +16,7 @@
   ],
   "shortcuts": [
     { "name": "Anotações", "url": "./#/notas" },
-    { "name": "Marcadores", "url": "./#/marcadores" }
+    { "name": "Marcadores", "url": "./#/marcadores" },
+    { "name": "Jogos", "url": "./jogos/" }
   ]
 }

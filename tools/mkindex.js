@@ -10,7 +10,7 @@ html = html.replace(/<!--scripts:start-->[\s\S]*?<!--scripts:end-->/, `<!--scrip
 fs.writeFileSync(path.join(root, 'index.html'), html);
 const swp = path.join(root, 'sw.js');
 if (fs.existsSync(swp)) {
-  const shell = ['./', 'index.html', 'manifest.webmanifest', 'firebase-config.js', 'css/fonts.css', 'css/style.css', 'css/dash.css', ...fs.readdirSync(path.join(root, 'fonts')).filter(f => f.endsWith('.woff2')).map(f => 'fonts/' + f), 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', ...js.map(f => 'js/' + f)];
+  const shell = ['./', 'index.html', 'manifest.webmanifest', 'firebase-config.js', 'css/fonts.css', 'css/style.css', 'css/dash.css', ...fs.readdirSync(path.join(root, 'fonts')).filter(f => f.endsWith('.woff2')).map(f => 'fonts/' + f), 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', ...(fs.existsSync(path.join(root, 'jogos', 'index.html')) ? ['jogos/', 'jogos/index.html'] : []), ...js.map(f => 'js/' + f)];
   let sw = fs.readFileSync(swp, 'utf8');
   sw = sw.replace(/\/\*shell:start\*\/[\s\S]*?\/\*shell:end\*\//, `/*shell:start*/${JSON.stringify(shell)}/*shell:end*/`);
   fs.writeFileSync(swp, sw);

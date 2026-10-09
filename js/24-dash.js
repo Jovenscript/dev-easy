@@ -176,12 +176,17 @@ const DASH=(function(){
     if(!TRAILS.length)return '';
     return '<section class="span12"><h2 class="eyebrow">Trilhas para ouvir</h2><div class="trails">'+TRAILS.map(function(t){var ids=trailIds(t);return '<div class="trail gl"><button class="lnk" style="text-align:left;padding:0" data-act="trail" data-id="'+t.id+'"><b>'+esc(t.name)+'</b><br><small>'+esc(t.desc)+'</small></button><span class="meta">'+ids.length+' itens · cerca de '+minutes(ids)+' min</span>'+(TTS.ok||arqOk()?'<button class="btn sm" data-act="radio" data-list="trail:'+t.id+'">'+ICON.play+' Ouvir trilha</button>':'')+'</div>'}).join('')+'</div></section>';
   }
+  /* atalho para a página de jogos (pasta jogos/, link comum: não passa pelo roteador do app) */
+  function jogosCard(){
+    return '<a class="gl card jogos-cta" href="jogos/"><span class="jc-ic" aria-hidden="true">'+ICON.game+'</span><span class="jc-t"><b>Jogos: treine Python jogando</b><small>Lições curtas com quiz, caça ao bug e outros desafios. Funciona sem internet.</small></span><span class="btn sm jc-b" aria-hidden="true">Jogar</span></a>';
+  }
   function view(){
     var N=DATA.length,done=S.studied.size,pct=N?Math.round(done*100/N):0,areas=CATS.filter(hasOwn),rng=(STORE.pref().rng===30)?30:14;
     var sd=perDay(liveOk('done'),rng),s14=perDay(liveOk('done'),14),sn=perDay(liveOk('note'),14),sm=perDay(liveOk('mark'),14),sa=perDay(activityList(),14);
     var nn=liveOk('note').length,mm=liveOk('mark').length,ff=S.fav.size,st=streakInfo();
     var h='<div class="dash"><section class="hero span12"><div><p class="eyebrow">Painel de estudo</p><h1>'+hello()+'</h1><p class="lead">'+
       (done||nn||mm?done+' de '+N+' fichas entendidas, em '+areas.length+' áreas.':'Escolha uma ficha, ouça o áudio e marque “Já entendi”. Seu progresso aparece aqui.')+'</p></div></section>';
+    h+='<section class="span12">'+jogosCard()+'</section>';
     h+='<section class="stats span12" aria-label="Resumo">'+
       statCard('Entendidas',done,'/'+N,pct+'% do guia',spark(s14.v,'#2DD4BF'),'#2DD4BF',ICON.check)+
       statCard('Sequência',st.n,st.n===1?'dia':'dias',st.n?(st.hoje?'Hoje já valeu · melhor: '+st.best:'Estude hoje para manter · melhor: '+st.best):'Estude hoje para começar',spark(sa.v,'#FB923C'),'#FB923C',ICON.flame)+
