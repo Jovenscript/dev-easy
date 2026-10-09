@@ -1,0 +1,141 @@
+# Gera o áudio das fichas com a voz do Gemini (Google). Não roda sozinho: só quando você clica.
+# Como usar: aba Actions -> "Gerar áudio (Gemini)" -> Run workflow. Passo a passo em tools/audio/LEIA-ME.md.
+# Precisa do Secret GEMINI_API_KEY (Settings -> Secrets and variables -> Actions).
+name: Gerar áudio (Gemini)
+run-name: Áudio Gemini · ${{ inputs.modo }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'O que fazer (siga a ordem 1, 2, 3, 4)'
+        required: true
+        type: choice
+        default: '1-testar-chave'
+        options:
+          - '1-testar-chave'
+          - '2-ouvir-vozes'
+          - '3-fichas-de-teste'
+          - '4-gerar-todas'
+          - '5-voltar-para-piper'
+      voz:
+        description: 'Voz escolhida, para os modos 3 e 4 (exemplo: Kore). Vazio = a que já está em uso, ou Sulafat se ainda não houver'
+        required: false
+        type: string
+        default: ''
+      vozes_para_ouvir:
+        description: 'Modo 2: vozes para comparar, separadas por vírgula'
+        required: false
+        type: string
+        default: 'Kore,Charon,Sulafat,Achird,Erinome,Sadaltager'
+      fichas_de_teste:
+        description: 'Modo 3: fichas para testar (até 6), separadas por vírgula'
+        required: false
+        type: string
+        default: 'backend,frontend,bits'
+      limite:
+        description: 'Modo 4: máximo de fichas nesta rodada (0 = todas)'
+        required: false
+        type: string
+        default: '0'
+      estilo:
+        description: 'Opcional: como a voz deve falar, em inglês. Vazio = o que já está em uso, ou o padrão do projeto'
+        required: false
+        type: string
+        default: ''
+      modelo:
+        description: 'Opcional: modelo do Gemini. Vazio = o que já está em uso, ou gemini-3.8-flash-tts'
+        required: false
+        type: string
+        default: ''
+      trocar_voz:
+        description: 'Modo 4: marque SÓ se quiser trocar a voz/estilo/modelo de TODAS as fichas (regrava tudo e gasta de novo)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+
+# uma execução de cada vez (duas ao mesmo tempo gastariam em dobro e brigariam pelos mesmos arquivos)
+concurrency:
+  group: gerar-audio
+  cancel-in-progress: false
+
+jobs:
+  audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Baixar o projeto
+        uses: actions/checkout@v4
+
+      - name: Instalar o que o gerador precisa
+        run: |
+          if ! python3 -m venv "$RUNNER_TEMP/venv" 2>/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq python3-venv
+            python3 -m venv "$RUNNER_TEMP/venv"
+          fi
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet numpy
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -hide_banner -encoders 2>&1 | grep -c libmp3lame
+
+      - name: Preparar o texto falado das fichas
+        run: node tools/audio/spoken-json.js tools/audio/spoken.json
+
+      - name: Rodar o gerador
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MODO: ${{ inputs.modo }}
+          VOZ: ${{ inputs.voz }}
+          VOZES: ${{ inputs.vozes_para_ouvir }}
+          FICHAS: ${{ inputs.fichas_de_teste }}
+          LIMITE: ${{ inputs.limite }}
+          ESTILO: ${{ inputs.estilo }}
+          MODELO: ${{ inputs.modelo }}
+          TROCAR: ${{ inputs.trocar_voz }}
+        run: |
+          case "$LIMITE" in
+            ''|*[!0-9]*) LIMITE=0 ;;
+          esac
+          extra=()
+          if [ -n "$MODELO" ]; then extra+=(--modelo "$MODELO"); fi
+          if [ -n "$ESTILO" ]; then extra+=(--estilo "$ESTILO"); fi
+          escolha=()
+          if [ -n "$VOZ" ]; then escolha+=(--voz "$VOZ"); fi
+          case "$MODO" in
+            1-*) python3 tools/audio/gemini.py --modo testar-chave "${escolha[@]}" "${extra[@]}" ;;
+            2-*) python3 tools/audio/gemini.py --modo amostras --voz "$VOZES" "${extra[@]}" ;;
+            3-*) python3 tools/audio/gemini.py --modo fichas --destino teste --ids "$FICHAS" "${escolha[@]}" "${extra[@]}" ;;
+            4-*)
+              if [ "$TROCAR" = "true" ]; then extra+=(--trocar); fi
+              python3 tools/audio/gemini.py --modo fichas --destino producao --ids all --limite "$LIMITE" --commit-a-cada 20 "${escolha[@]}" "${extra[@]}" ;;
+            5-*) python3 tools/audio/gemini.py --modo voltar-para-piper ;;
+            *) echo "Modo desconhecido: $MODO"; exit 1 ;;
+          esac
+
+      # roda mesmo que o passo anterior tenha parado no meio: guarda o que já ficou pronto
+      - name: Guardar no GitHub
+        if: ${{ always() && (startsWith(inputs.modo, '2-') || startsWith(inputs.modo, '3-') || startsWith(inputs.modo, '4-')) }}
+        env:
+          MODO: ${{ inputs.modo }}
+        run: |
+          destino=teste
+          case "$MODO" in
+            4-*) destino=producao ;;
+          esac
+          python3 tools/audio/gemini.py --modo guardar --destino "$destino" --mensagem "Áudio do Gemini (modo $MODO)"
+
+      - name: Pedir ao GitHub Pages para atualizar o site
+        if: ${{ always() && !startsWith(inputs.modo, '1-') }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method POST "repos/${{ github.repository }}/pages/builds" --silent || echo "Sem problema, o site atualiza sozinho em alguns minutos."
