@@ -108,6 +108,9 @@ class ErroApi(Exception):
     def __init__(self, status, msg, transitorio=False, quota_dia=False, chave=False, espera=0):
         Exception.__init__(self, ('HTTP %s: ' % status if status else '') + msg)
         self.status, self.msg, self.transitorio, self.quota_dia, self.chave, self.espera = status, msg, transitorio, quota_dia, chave, espera
+    @property
+    def cota_zero(self):
+        return 'parece ser ZERO' in str(self)          # a frase vem de erro_http; vale também quando o erro foi reembrulhado em sintetizar()
 
 def _post(url, corpo, chave, timeout=300):
     req = urllib.request.Request(url, data=json.dumps(corpo).encode('utf-8'), method='POST',
@@ -125,10 +128,12 @@ def msg_erro(dados, chave):
 
 def erro_http(status, dados, chave):
     bruto = dados.decode('utf-8', 'replace'); msg = msg_erro(dados, chave); low = (msg + ' ' + bruto).lower()
+    zero = status == 429 and re.search(r'limit:\s*0\b', bruto) is not None          # "limit: 0": a conta grátis não inclui este modelo; esperar não adianta
+    if zero: msg += ' → o limite grátis deste modelo parece ser ZERO: ative o faturamento (Billing) no Google AI Studio para poder usá-lo.'
     espera = 0
     m = re.search(r'retry(?:delay)?\W{1,6}(?:in\W{1,3})?(\d+(?:\.\d+)?)\s*s', bruto, re.I)
     if m: espera = int(float(m.group(1))) + 2
-    quota_dia = status == 429 and re.search(r'perday|per_day|per day|daily|por dia', low) is not None
+    quota_dia = zero or (status == 429 and re.search(r'perday|per_day|per day|daily|por dia', low) is not None)
     chave_ruim = status in (400, 401, 403) and re.search(r'api key|api_key|permission|unauthenticated|not valid|expired|denied', low) is not None
     transitorio = (status in (429, 500, 502, 503, 504) and not quota_dia) or (status == 400 and not chave_ruim and re.search(r'generate text|try again|temporar', low) is not None)
     return ErroApi(status, msg, transitorio=transitorio, quota_dia=quota_dia, chave=chave_ruim, espera=espera)
@@ -483,16 +488,16 @@ def modo_fichas(a, chave):
     log('Estimativa desta execução: ~%.0f min de áudio%s.' % (est / 60, ', cerca de US$ %.2f se a sua conta for paga (na cota grátis, zero)' % c if c is not None else ''))
     if a.simular: log('(simulação: nada foi gerado)'); return 0
     if producao and pend: garantir_marco()
-    feitas, suspeitas, falharam, seg_api, parou, seguidas = 0, [], [], 0.0, None, 0
+    feitas, suspeitas, falharam, seg_api, parou, seguidas, cota_zero = 0, [], [], 0.0, None, 0, False
     for i, (e, h) in enumerate(pend):
         if i: time.sleep(a.espera)
         try: res, cobrado = gerar_uma(chave, a, modelo, voz, estilo, e, h, pasta)
         except ErroApi as err:
             log('✗ %s: %s' % (e['id'], err))
             if err.quota_dia or err.status == 429:
-                parou = 'cota'
-                log('A cota da sua conta acabou por agora. O que já foi gerado fica guardado; rode de novo depois (de preferência amanhã) para continuar de onde parou.')
-                anota('warning', 'Cota do Gemini esgotada: rode de novo mais tarde para continuar.'); break
+                parou = 'cota'; cota_zero = err.cota_zero
+                if not cota_zero: log('A cota da sua conta acabou por agora. O que já foi gerado fica guardado; rode de novo depois (de preferência amanhã) para continuar de onde parou.')
+                anota('warning', 'O limite grátis deste modelo é zero: ative o faturamento (Billing) no Google AI Studio.' if cota_zero else 'Cota do Gemini esgotada: rode de novo mais tarde para continuar.'); break
             if err.chave:
                 parou = 'erro'; log('A chave não foi aceita. Confira o Secret GEMINI_API_KEY (Settings → Secrets and variables → Actions) e rode o modo 1.')
                 anota('error', 'Chave do Gemini não aceita.'); break
@@ -521,7 +526,7 @@ def modo_fichas(a, chave):
               '- Áudio gerado: %.1f min%s' % (seg_api / 60, ' (custo estimado US$ %.2f)' % cg if cg is not None else ''), '- Ainda faltam: **%d** fichas' % faltam]
     if suspeitas: linhas.append('- Suspeitas (rode de novo): ' + ', '.join(suspeitas))
     if falharam: linhas.append('- O Google não devolveu áudio para: ' + ', '.join(falharam) + ' (rode de novo; se persistir, o texto dessa ficha pode estar sendo recusado)')
-    if parou == 'cota': linhas.append('- ⚠ Parou porque a cota acabou. Rode de novo depois.')
+    if parou == 'cota': linhas.append('- ⚠ Parou porque o limite grátis deste modelo é zero: ative o faturamento (Billing) no Google AI Studio e rode de novo.' if cota_zero else '- ⚠ Parou porque a cota acabou. Rode de novo depois.')
     if parou == 'erro': linhas.append('- ✗ Parou por erro (veja o registro acima).')
     if not producao and feitas: linhas.append('- Ouça em: **https://jovenscript.github.io/dev-easy/audio-teste/** (espere 1 a 2 minutos).')
     resumo_md(linhas)
@@ -556,6 +561,7 @@ def main():
     except ErroApi as e:
         log('✗ ' + str(e))
         if e.chave: log('A chave não foi aceita ou não tem permissão. Crie outra em aistudio.google.com/apikey e troque o Secret GEMINI_API_KEY.')
+        elif e.cota_zero: pass                                       # a própria mensagem já explica o que fazer
         elif e.quota_dia or e.status == 429: log('Cota esgotada por agora. Tente de novo mais tarde.')
         elif e.status == 404: log('Modelo ou endereço não encontrado. Confira o nome do modelo (padrão: %s).' % MODELO_PADRAO)
         anota('error', str(e)[:300]); resumo_md(['### ✗ Não deu certo', '', '`%s`' % str(e)[:500]])

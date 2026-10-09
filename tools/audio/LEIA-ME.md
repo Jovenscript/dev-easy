@@ -29,7 +29,7 @@ Faça nesta ordem:
 ### Quanto custa (confira antes: `ai.google.dev/gemini-api/docs/pricing`)
 - Preço visto em outubro de 2026: **US$ 9 por 1 milhão de tokens de áudio** no modelo `gemini-3.8-flash-tts` (o `...-lite-tts` custa US$ 6), e o Google avisou que **dobra em 1º/1/2027**. Áudio gasta 25 tokens por segundo.
 - As 358 fichas têm cerca de 61 mil palavras, perto de 6 a 7 horas de áudio: **em torno de US$ 6** hoje (uns US$ 12 depois de 2027). É uma **estimativa minha**, não uma cobrança; o resumo de cada execução mostra a estimativa da rodada.
-- Existe uma cota grátis, mas **não consegui ver os limites** (eles aparecem para o seu projeto em `aistudio.google.com/rate-limit`). Se for pequena, o modo 4 gera algumas fichas por dia e para; sem problema, ele continua depois.
+- Existe uma cota grátis, mas **não consegui ver os limites** (eles aparecem para o seu projeto em `aistudio.google.com/rate-limit`). Se for pequena, o modo 4 gera algumas fichas por dia e para; sem problema, ele continua depois. Se o limite grátis deste modelo for zero, o modo 1 avisa e será preciso **ativar o faturamento** (cartão) no Google AI Studio.
 - **Regravar tudo de novo cobra de novo.** Só muda a conta se você trocar voz, estilo ou modelo (o gerador pede confirmação, caixa **trocar_voz**) ou editar o texto das fichas (aí só as fichas editadas são regravadas).
 - Cada regravação completa deixa o repositório uns **150 MB maior** (o histórico guarda as versões antigas). Não faça isso à toa.
 
@@ -52,6 +52,7 @@ Atenção: as outras palavras em inglês (framework, deploy, software...) seguem
 | "Falta a chave" | O Secret `GEMINI_API_KEY` não existe ou o nome está diferente (passo 2). |
 | "A chave não foi aceita" | Crie outra chave e troque o Secret. |
 | "Cota esgotada" | Espere (até o dia seguinte) e rode o modo 4 de novo: ele continua. |
+| "…limite grátis deste modelo parece ser ZERO" | A conta gratuita não inclui este modelo. No Google AI Studio, ative o faturamento (Billing) do projeto da chave e rode de novo. |
 | "a resposta veio sem áudio. Forma recebida: …" | O Google mudou o formato. Copie essa linha inteira para quem estiver te ajudando. |
 | "O Google não devolveu áudio para: …" | Uma ficha específica foi recusada ou veio sem áudio; as outras seguem normalmente. Rode de novo; se for sempre a mesma, o texto dela pode estar sendo recusado (avise quem estiver te ajudando). |
 | "Três fichas seguidas deram problema" | O gerador parou sozinho para não gastar à toa. Veja a mensagem de erro no registro da execução e rode o modo 1. |
