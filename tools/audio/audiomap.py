@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Lê audio/*.json (um por MP3 pronto) e escreve js/18-audiomap.js com a duração e o tamanho de cada áudio.
 Só entram áudios que batem com o texto ATUAL das fichas (hash do gerador): áudio desatualizado fica de fora e o app usa a voz do aparelho.
+Vale para os dois geradores: gerar.py (Piper, vozes abertas) e gemini.py (cada JSON diz qual gerou: campo "motor").
 uso (na raiz do projeto): python3 tools/audio/audiomap.py audio js/18-audiomap.js --kbps 48 --spoken tools/audio/spoken.json"""
 import json, os, sys, glob, hashlib, argparse
 ap = argparse.ArgumentParser()
@@ -22,9 +23,13 @@ for f in sorted(glob.glob(os.path.join(a.pasta, '*.json'))):
     if id_ != '_teste':
         e = spoken.get(id_)
         if not e: orfaos.append(id_); continue
-        h = hashlib.sha1((j['voz'] + str(j['speed']) + str(a.kbps) + str(j.get('pausa', 1.0)) + str(gerar.NORM_V) + json.dumps(e['segs'], ensure_ascii=False)).encode()).hexdigest()[:16]
+        if j.get('motor') == 'gemini':
+            import gemini
+            h = gemini.hash_ficha(j.get('modelo', ''), j.get('voz_gemini', ''), j.get('estilo', ''), e['segs'])
+        else:
+            h = hashlib.sha1((j['voz'] + str(j['speed']) + str(a.kbps) + str(j.get('pausa', 1.0)) + str(gerar.NORM_V) + json.dumps(e['segs'], ensure_ascii=False)).encode()).hexdigest()[:16]
         if h != j.get('h'): velhos.append(id_); continue
-    m[id_] = [round(j['dur']), os.path.getsize(mp3)]; voz.add(j.get('voz', '?'))
+    m[id_] = [round(j['dur']), os.path.getsize(mp3)]; voz.add(j.get('motor') or j.get('voz', '?'))
 js = 'var AUDIOMAP=' + json.dumps(m, separators=(',', ':'), ensure_ascii=False) + ';\n'
 open(a.saida, 'w', encoding='utf8').write(js)
 tot = sum(v[1] for v in m.values()) / 1e6; dur = sum(v[0] for v in m.values()) / 3600

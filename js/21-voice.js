@@ -305,7 +305,9 @@ function vVoz(){
   h+='<p class="lead">Escolha como o app lê para você. Dá para trocar quando quiser.</p>';
   if(TTS.semArq||S.modo==='aparelho'&&tem&&TTS.nota)h+='<p class="note" style="margin:0 0 12px">'+esc(TTS.nota||'O áudio gravado não carregou neste aparelho. Usando a voz do aparelho.')+' <button class="lnk" data-act="vretry">Tentar a voz gravada de novo</button></p>';
   if(tem){
-    h+='<button class="vozcard" data-act="vmodo" data-m="natural" aria-pressed="'+(S.modo!=='aparelho')+'"><b>Voz natural (gravada)</b><small>Voz neural de código aberto, gravada antes. O som começa quase na hora. Cada ficha baixa um arquivo de cerca de 0,4 MB (dez fichas gastam uns 4 MB de internet). Há áudio para '+n+' fichas; as outras usam a voz do aparelho.</small></button>';
+    var mb=0.4,tot=0;Object.keys(AUDIOMAP).forEach(function(k){if(k.charAt(0)!=='_')tot+=AUDIOMAP[k][1]});if(n&&tot)mb=tot/n/1e6;    /* tamanho médio de verdade, não um número fixo */
+    var mbT=function(x){return (Math.round(x*10)/10).toFixed(1).replace('.',',')};
+    h+='<button class="vozcard" data-act="vmodo" data-m="natural" aria-pressed="'+(S.modo!=='aparelho')+'"><b>Voz natural (gravada)</b><small>Voz neural, gravada antes. O som começa quase na hora. Cada ficha baixa um arquivo de cerca de '+mbT(mb)+' MB (dez fichas gastam uns '+mbT(mb*10)+' MB de internet). Há áudio para '+n+' fichas; as outras usam a voz do aparelho.</small></button>';
   }
   h+='<button class="vozcard" data-act="vmodo" data-m="aparelho" aria-pressed="'+(S.modo==='aparelho'||!tem)+'"><b>Voz do aparelho</b><small>Usa a voz que o seu celular já tem. Vozes “de rede” podem demorar alguns segundos para começar.</small></button>';
   if(TTS.ok){

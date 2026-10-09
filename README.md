@@ -64,7 +64,7 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 
 **Depois de criar, apagar ou renomear um arquivo em `js/`**, rode `node tools/mkindex.js` (ou `npm run indice`): ele atualiza o `index.html` e a lista do modo offline. Os arquivos são carregados em ordem alfabética do nome.
 
-**Se mudar o texto de uma ficha**, o áudio dela fica desatualizado. Veja `tools/audio/LEIA-ME.md`.
+**Se mudar o texto de uma ficha**, o áudio dela fica desatualizado. Veja `tools/audio/LEIA-ME.md`. Para trocar a voz gravada pela do Gemini, o mesmo arquivo tem o passo a passo (botão na aba Actions; não precisa instalar nada).
 
 ## Limites que você deve saber
 - O guia é **público**: qualquer pessoa com o endereço lê as fichas (o site é só arquivos no GitHub). O login protege apenas as **suas** anotações, marcadores e progresso na nuvem, não o texto do guia.
@@ -74,6 +74,6 @@ Depois: abra o guia → **Conta e nuvem** → **Entrar com Google**. Entre com a
 - Catálogo não é uma lista completa de tecnologias: é um mapa para começar.
 
 ## Créditos e licenças
-- Voz gravada: Piper `pt_BR-faber-medium` (dados CC0), via sherpa-onnx.
+- Voz gravada: Piper `pt_BR-faber-medium` (dados CC0), via sherpa-onnx. Opcionalmente, voz do Gemini (Google), gerada pelo botão **Gerar áudio (Gemini)** da aba Actions (veja `tools/audio/LEIA-ME.md`); as fichas com essa voz são áudio sintético.
 - Fontes: Barlow Condensed e IBM Plex (licença SIL OFL, textos em `fonts/LICENSE-*.txt`).
 - Nuvem: Firebase (Google).

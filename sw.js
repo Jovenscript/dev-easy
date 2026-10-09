@@ -19,7 +19,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;                 /* Firebase, Google...: o navegador resolve */
-  if (/\/audio\/[^/]+\.mp3$/.test(url.pathname)) return;      /* áudio: direto da rede (o servidor entende "Range") */
+  if (/\/audio(-teste)?\/.+\.mp3$/.test(url.pathname)) return;   /* áudio (e o de teste): direto da rede (o servidor entende "Range") */
   e.respondWith(rede(req));
 });
 

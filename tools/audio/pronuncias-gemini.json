@@ -1,0 +1,6 @@
+{
+  "_como_usar": "Palavra como está escrita no texto falado -> como a voz do Gemini deve ler, escrito em português. Vale SÓ para o áudio do Gemini; não muda o texto do guia nem as vozes antigas. Hífen e espaço contam igual (back-end = backend = back end), maiúscula e plural (s) são tratados sozinhos. Depois de mudar uma linha, rode o gerador de novo (modo 4): só as fichas que têm essa palavra são regravadas.",
+  "back-end": "békêndi",
+  "front-end": "frôntêndi",
+  "full-stack": "fúl stéque"
+}
