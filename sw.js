@@ -1,9 +1,11 @@
 /* DEV EASY: depois da primeira visita o guia abre mesmo sem internet.
    Regra: tenta a internet primeiro (assim uma atualização aparece na hora) e, se estiver sem sinal ou lento (mais de 4 s), usa a cópia guardada.
    O áudio gravado (150 MB) não é guardado aqui: toca com internet; sem internet o app usa a voz do aparelho.
+   O curso do ENIAC: o motor e o manifesto vêm da lista abaixo; cada unidade (jogos/curso/uNN.js) é guardada quando é aberta (o app abre todas em segundo plano
+   logo depois do manifesto), então o ENIAC também funciona sem internet depois da primeira visita.
    A lista abaixo é gerada por:  node tools/mkindex.js   (não precisa editar à mão). */
-const V = 'dev-easy-v1';
-const SHELL = /*shell:start*/["./","index.html","manifest.webmanifest","firebase-config.js","css/fonts.css","css/style.css","css/dash.css","fonts/barlow-condensed-500.woff2","fonts/barlow-condensed-600.woff2","fonts/barlow-condensed-700.woff2","fonts/ibm-plex-mono-400.woff2","fonts/ibm-plex-mono-500.woff2","fonts/ibm-plex-sans-400-italic.woff2","fonts/ibm-plex-sans-400.woff2","fonts/ibm-plex-sans-500.woff2","fonts/ibm-plex-sans-600.woff2","icons/icon.svg","icons/icon-192.png","icons/icon-512.png","jogos/","jogos/index.html","js/00-prelude.js","js/05-pron.js","js/05-pron2.js","js/10-widgets.js","js/12-widgets2.js","js/13-widgets3.js","js/14-widgets4.js","js/14-widgets5.js","js/14-widgets6.js","js/14-widgets7.js","js/14-widgets8.js","js/14-widgets9.js","js/14-widgetsa.js","js/14-widgetsb.js","js/14-widgetsc.js","js/15-frames.js","js/16-frames2.js","js/16-frames3.js","js/16-frames4.js","js/18-audiomap.js","js/19-store.js","js/20-core.js","js/21-voice.js","js/22-views.js","js/23-shell.js","js/24-dash.js","js/25-notes.js","js/26-conta.js","js/27-sync.js","js/28-gate.js","js/40-base.js","js/41-front.js","js/42-lang.js","js/43-back.js","js/44-ops.js","js/45-dados.js","js/46-dados2.js","js/47-seg.js","js/48-seg2.js","js/49-seg3.js","js/50-seg4.js","js/51-ia.js","js/52-ia2.js","js/53-ia3.js","js/54-ia4.js","js/55-ia5.js","js/56-ia6.js","js/60-ind.js","js/61-ind2.js","js/62-ind3.js","js/63-ind4.js","js/64-ind5.js","js/80-trails.js","js/99-boot.js"]/*shell:end*/;
+const V = 'dev-easy-v2';
+const SHELL = /*shell:start*/["./","index.html","manifest.webmanifest","firebase-config.js","css/fonts.css","css/style.css","css/dash.css","css/jogo.css","fonts/barlow-condensed-500.woff2","fonts/barlow-condensed-600.woff2","fonts/barlow-condensed-700.woff2","fonts/ibm-plex-mono-400.woff2","fonts/ibm-plex-mono-500.woff2","fonts/ibm-plex-sans-400-italic.woff2","fonts/ibm-plex-sans-400.woff2","fonts/ibm-plex-sans-500.woff2","fonts/ibm-plex-sans-600.woff2","icons/icon.svg","icons/icon-192.png","icons/icon-512.png","jogos/","jogos/index.html","jogos/curso/manifesto.js","js/00-prelude.js","js/05-pron.js","js/05-pron2.js","js/10-widgets.js","js/12-widgets2.js","js/13-widgets3.js","js/14-widgets4.js","js/14-widgets5.js","js/14-widgets6.js","js/14-widgets7.js","js/14-widgets8.js","js/14-widgets9.js","js/14-widgetsa.js","js/14-widgetsb.js","js/14-widgetsc.js","js/15-frames.js","js/16-frames2.js","js/16-frames3.js","js/16-frames4.js","js/18-audiomap.js","js/19-store.js","js/20-core.js","js/21-voice.js","js/22-views.js","js/23-shell.js","js/24-dash.js","js/25-notes.js","js/26-conta.js","js/27-sync.js","js/28-gate.js","js/30-jogo-1-base.js","js/30-jogo-2-estado.js","js/30-jogo-3-robo.js","js/30-jogo-4-tipos.js","js/30-jogo-5-janela.js","js/30-jogo-6-licao.js","js/30-jogo-7-trilha.js","js/30-jogo-8-rotas.js","js/40-base.js","js/41-front.js","js/42-lang.js","js/43-back.js","js/44-ops.js","js/45-dados.js","js/46-dados2.js","js/47-seg.js","js/48-seg2.js","js/49-seg3.js","js/50-seg4.js","js/51-ia.js","js/52-ia2.js","js/53-ia3.js","js/54-ia4.js","js/55-ia5.js","js/56-ia6.js","js/60-ind.js","js/61-ind2.js","js/62-ind3.js","js/63-ind4.js","js/64-ind5.js","js/80-trails.js","js/99-boot.js"]/*shell:end*/;
 
 self.addEventListener('install', e => {
   /* cada arquivo é guardado separado: se um falhar, os outros continuam valendo */
@@ -23,10 +25,18 @@ self.addEventListener('fetch', e => {
   e.respondWith(rede(req));
 });
 
+/* as unidades do curso são pedidas como jogos/curso/u01.js?v=HASH: guardadas sem o "?v=", cada unidade ocupa uma vaga só e a versão nova troca a antiga */
+function chave(req) {
+  const u = new URL(req.url);
+  if (u.search && u.pathname.indexOf('/jogos/curso/') !== -1) { u.search = ''; return u.href; }
+  return req;
+}
+
 function rede(req) {
   const nav = req.mode === 'navigate';
+  const k = chave(req);
   function guardada() {
-    return caches.open(V).then(c => c.match(req, { ignoreSearch: true }).then(r => r || (nav ? c.match('index.html').then(x => x || c.match('./')) : undefined)));
+    return caches.open(V).then(c => c.match(k, { ignoreSearch: true }).then(r => r || (nav ? c.match('index.html').then(x => x || c.match('./')) : undefined)));
   }
   return new Promise(resolve => {
     let fim = false;
@@ -34,7 +44,7 @@ function rede(req) {
     fetch(req, { cache: 'no-cache' }).then(res => {
       if (res && res.ok && res.type === 'basic' && res.status === 200) {
         const cp = res.clone();
-        caches.open(V).then(c => c.put(req, cp)).catch(() => {});
+        caches.open(V).then(c => c.put(k, cp)).catch(() => {});
       }
       if (!fim) { fim = true; clearTimeout(t); resolve(res); }
     }, () => {

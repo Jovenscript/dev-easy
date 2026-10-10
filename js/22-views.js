@@ -1,6 +1,6 @@
 /* ===== telas do catálogo, navegação e eventos ===== */
 const VIEWS={},ACTS={};          /* os outros arquivos registram aqui suas telas (VIEWS) e botões (ACTS) */
-const WIDE={home:1,notas:1,marcas:1,conta:1};
+const WIDE={home:1,notas:1,marcas:1,conta:1,jogos:1};
 const SECN={oq:'O que é',an:'Analogia',pq:'Para que serve',ex:'Na prática',demo:'Veja funcionando',alt:'Alternativas e parecidos',rel:'Veja também',nota:'Minhas anotações'};
 
 function bars(l){return '<span class="bars" aria-hidden="true"><i class="'+(l>=1?'f':'')+'"></i><i class="'+(l>=2?'f':'')+'"></i><i class="'+(l>=3?'f':'')+'"></i></span>'}
@@ -84,6 +84,8 @@ function hashOf(){
     case 'notas':return '#/notas';
     case 'marcas':return '#/marcadores';
     case 'conta':return '#/conta';
+    case 'jogos':return '#/jogos';
+    case 'jogo':return '#/jogo/'+S.id;
     default:return '#/';
   }
 }
@@ -96,11 +98,14 @@ function fromHash(h){
   if(a==='busca'&&b)return {view:'search',q:b};
   if(a==='voz'||a==='notas'||a==='conta')return {view:a};
   if(a==='marcadores')return {view:'marcas'};
+  if(a==='jogos')return {view:'jogos'};
+  if(a==='jogo'&&/^u\d{2}l\d{2}$/.test(b))return {view:'jogo',id:b};          /* ENIAC: trilha e lição (js/30-jogo-*.js) */
   return {view:'home'};
 }
 function applyState(st){S.view=st.view||'home';S.cat=st.cat||null;S.tid=st.tid||null;S.id=st.id||null;S.q=st.q||'';S.ctx=st.ctx||null;S.filter=st.filter||'all'}
 function stateNow(){return {view:S.view,cat:S.cat,tid:S.tid,id:S.id,q:S.q,ctx:S.ctx,filter:S.filter,n:NAVN}}
 function navTo(view,p,replace){
+  if(typeof ENIAC!=='undefined'&&ENIAC.guarda(function(){navTo(view,p,replace)}))return;      /* no meio de uma lição, pergunta antes de sair */
   var y=window.scrollY||0,prev=Object.assign(stateNow(),{y:y});
   try{history.replaceState(Object.assign({},history.state||stateNow(),{y:y}),'')}catch(e){}
   S.view=view;S.filter='all';
@@ -121,6 +126,7 @@ function back(){
   navTo('home',{},true);
 }
 window.addEventListener('popstate',function(e){
+  if(typeof ENIAC!=='undefined'&&ENIAC.aoVoltar(e))return;                                      /* Voltar do navegador no meio de uma lição: pergunta e fica */
   var st=(e.state&&e.state.view)?e.state:Object.assign(fromHash(location.hash),{n:0});
   applyState(st);NAVN=st.n||0;TTS.follow=false;
   $('#q').value=S.view==='search'?S.q:'';
@@ -194,13 +200,14 @@ function refreshSoon(){
     var ae=document.activeElement;
     if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)&&$('#view').contains(ae)){refreshSoon();return}   /* não mexe na tela enquanto você digita */
     if(S.view==='entry'){if(typeof NOTES!=='undefined')NOTES.refreshEntry();return}
+    if(S.view==='jogo')return;                                      /* lição em andamento: a tela não é refeita por mudanças vindas de fora */
     var y=window.scrollY||0;render();window.scrollTo(0,y);
   },300);
 }
 
 /* ----- início ----- */
 function boot(){
-  finalize();loadLocal();STORE.init();STORE.on(onData);initVoz();
+  finalize();loadLocal();if(typeof ENIAC!=='undefined')ENIAC.iniciar();STORE.init();STORE.on(onData);initVoz();
   var hs=history.state,st=(hs&&hs.view)?hs:fromHash(location.hash);
   applyState(st);NAVN=(hs&&hs.n)||0;
   if(S.view==='entry'&&!byId[S.id])applyState({view:'home'});

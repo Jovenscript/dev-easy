@@ -93,7 +93,7 @@ const SYNC=(function(){
     unM=mainRef.onSnapshot(function(sn){
       var d=sn.exists?sn.data():{};
       STORE.merge(d,'nuvem');
-      if(!first.m){first.m=true;STORE.dirtyAgainst(d,['done','fav','mark','resume'])}
+      if(!first.m){first.m=true;STORE.dirtyAgainst(d,['done','fav','mark','resume','jogo'])}
       afterRemote();
     },onErr);
     unN=notesCol.onSnapshot(function(qs){

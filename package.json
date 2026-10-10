@@ -5,6 +5,7 @@
   "description": "DEV EASY: guia de tecnologias em linguagem simples, com voz, anotações e marcadores.",
   "scripts": {
     "start": "node tools/serve.js",
-    "indice": "node tools/mkindex.js"
+    "indice": "node tools/mkindex.js",
+    "teste:jogo": "node tools/curso/teste-jogo.js"
   }
 }

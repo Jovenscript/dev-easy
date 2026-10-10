@@ -176,10 +176,8 @@ const DASH=(function(){
     if(!TRAILS.length)return '';
     return '<section class="span12"><h2 class="eyebrow">Trilhas para ouvir</h2><div class="trails">'+TRAILS.map(function(t){var ids=trailIds(t);return '<div class="trail gl"><button class="lnk" style="text-align:left;padding:0" data-act="trail" data-id="'+t.id+'"><b>'+esc(t.name)+'</b><br><small>'+esc(t.desc)+'</small></button><span class="meta">'+ids.length+' itens · cerca de '+minutes(ids)+' min</span>'+(TTS.ok||arqOk()?'<button class="btn sm" data-act="radio" data-list="trail:'+t.id+'">'+ICON.play+' Ouvir trilha</button>':'')+'</div>'}).join('')+'</div></section>';
   }
-  /* atalho para a página de jogos (pasta jogos/, link comum: não passa pelo roteador do app) */
-  function jogosCard(){
-    return '<a class="gl card jogos-cta" href="jogos/"><span class="jc-ic" aria-hidden="true">'+ICON.game+'</span><span class="jc-t"><b>Jogos: treine Python jogando</b><small>Lições curtas com quiz, caça ao bug e outros desafios. Funciona sem internet.</small></span><span class="btn sm jc-b" aria-hidden="true">Jogar</span></a>';
-  }
+  /* atalho para o ENIAC (jogo de lições de Python): o cartão e o botão Continuar vêm de js/30-jogo-7-trilha.js */
+  function jogosCard(){return (typeof ENIAC!=='undefined')?ENIAC.trilha.cartao():''}
   function view(){
     var N=DATA.length,done=S.studied.size,pct=N?Math.round(done*100/N):0,areas=CATS.filter(hasOwn),rng=(STORE.pref().rng===30)?30:14;
     var sd=perDay(liveOk('done'),rng),s14=perDay(liveOk('done'),14),sn=perDay(liveOk('note'),14),sm=perDay(liveOk('mark'),14),sa=perDay(activityList(),14);

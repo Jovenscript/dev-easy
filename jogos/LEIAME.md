@@ -1,58 +1,53 @@
-# Jogos (Codivara)
+# ENIAC (curso de Python em jogo)
 
-Lições de Python em forma de jogo: 4 lições, 24 exercícios, 5 tipos de jogo. Tudo em **um arquivo só**: `jogos/index.html`.
+O ENIAC é **parte do DEV EASY**: mesma barra lateral, mesmo tema, mesmo login e mesma nuvem.
 
-- Endereço: `https://jovenscript.github.io/dev-easy/jogos/`. Também pelo menu do DEV EASY (**Praticar → Jogos**) e pelo cartão no topo do painel.
-- Depois da primeira visita funciona sem internet (o modo offline do DEV EASY guarda a página).
-- O progresso do jogo (XP, sequência, lições feitas) fica **neste navegador** e é **separado** do progresso das fichas. Não vai para a nuvem.
-- O nome **Codivara** e o mascote **Capi** são provisórios (`APP.nome` e `APP.mascote`, no começo do código).
+- Trilha: `#/jogos` (menu **Praticar → ENIAC** e cartão no painel). Lição: `#/jogo/u01l01` (o id é `uNNlMM`).
+- `jogos/index.html` só **redireciona** para `#/jogos`, para links e atalhos antigos continuarem funcionando.
+- Depois da primeira visita funciona **sem internet**: o motor e a lista de lições ficam pré-guardados, e cada unidade fica guardada na primeira vez que abre.
 
-## Adicionar uma lição (pelo GitHub, no navegador)
-1. No GitHub, abra `jogos/index.html` e clique no lápis (**Edit this file**). Melhor no computador do que no celular.
-2. Clique dentro do texto, aperte **Ctrl+F** e procure: `COLE A PRÓXIMA LIÇÃO AQUI`.
-3. Cole o bloco abaixo **na linha de cima** dessa frase. Todo bloco termina com `},` (chave e vírgula).
-4. Troque o `id` por um que ainda não existe (`l6`, `l7`...) e os textos.
-5. **Commit changes**. Em 1 a 2 minutos o site atualiza (se não mudar, aperte Ctrl+F5).
+## De onde vem o curso
+`jogos/curso/*.js` é **gerado**. Não edite à mão: a próxima geração apaga a mudança.
 
-```js
-        {
-          id: "l5",
-          titulo: "Minha lição",
-          resumo: "Frase curta que aparece na trilha",
-          intro: {
-            paragrafos: ["Explique o assunto em frases curtas.", "Use `crases` para destacar código."],
-            exemplo: { codigo: "print(2 + 3)", saida: "5" }
-          },
-          exercicios: [
-            {
-              tipo: "quiz",
-              enunciado: "O que este código mostra na tela?",
-              codigo: "print(2 + 3)",
-              opcoes: ["5", "23", "2 + 3", "Erro"],
-              explicacao: "Sem aspas, o Python faz a conta: 2 + 3 = 5."
-            }
-          ]
-        },
+1. Escreva ou ajuste a unidade em `tools/curso/src/uNN-nome.py` (guia completo: `tools/curso/GUIA-AUTORES.md`).
+2. Rode `python3 tools/curso/build.py`. Ele roda o Python de verdade em cada exercício, confere tudo e só então escreve `manifesto.js` e `uNN.js`. Se houver erro, não escreve nada. Com `-u u03` só confere a unidade; com `-a` mostra os avisos.
+3. Suba `jogos/curso/` junto. Para ver o curso novo basta recarregar a página.
+
+## Como o motor funciona
+Os arquivos carregam em ordem alfabética. Depois de criar ou apagar um `js/*.js`, rode `node tools/mkindex.js` (ele também atualiza a lista do modo offline em `sw.js`).
+
+| Arquivo | O que faz |
+|---|---|
+| `js/30-jogo-1-base.js` | Recebe o curso (`ENIAC.manifesto`, `ENIAC.unidade`), carrega as unidades sob demanda, realce de código. |
+| `js/30-jogo-2-estado.js` | Progresso, XP, nível, sequência, estrelas, conquistas, desbloqueio e migração. |
+| `js/30-jogo-3-robo.js` | `ENIAC.robo(estado, tamanho)`: o robô em SVG (normal, feliz, errou, pensando, comemorando). |
+| `js/30-jogo-4-tipos.js` | Os 6 tipos de exercício: quiz, digite, bug, monte, lacuna e pares (sem arrastar). |
+| `js/30-jogo-5-janela.js` | Janelas (sair, sem vidas, conquistas, ajustes) e confete. |
+| `js/30-jogo-6-licao.js` | A lição: mini-aula, exercícios, feedback e resultado. |
+| `js/30-jogo-7-trilha.js` | A trilha: unidades, caminho de bolinhas, conquistas, ajustes, cartão do painel. |
+| `js/30-jogo-8-rotas.js` | Liga tudo ao roteador, ao menu e ao painel. |
+| `css/jogo.css` | Visual, com os mesmos tokens de cor do resto do app. |
+
+## Regras do jogo
+- 5 vidas por lição. Errar tira 1 vida e o exercício **volta no fim da fila**. Sem vidas: a lição recomeça.
+- XP: 10 por exercício certo de primeira, 5 se já tinha errado nele. O XP só entra no total quando a lição **termina**.
+- Estrelas: 3 sem nenhum erro (anel dourado), 2 com até 2 erros, 1 com mais.
+- Nível: chegar ao nível N pede `50 × N × (N − 1)` XP no total (100, 300, 600...).
+- Sequência: dias seguidos com pelo menos 1 lição concluída.
+- Cada lição só abre depois da anterior. Em **Ajustes** (na trilha) há "Liberar todas as lições".
+
+## Onde fica o progresso
+No `STORE` do app, no grupo `jogo`, pelo mesmo caminho de nuvem e backup das fichas (`js/19-store.js`, `js/27-sync.js`). Um registro por lição (`l-<id>`), por dia (`d-AAAAMMDD`) e por conquista (`c-<id>`), mais `cfg` e `xp0`. XP e sequência são **calculados** desses registros, não guardados: dois aparelhos que jogam sem internet se juntam sem perder nada.
+
+Migração: na primeira abertura, se o grupo `jogo` estiver vazio e existir `localStorage['codivara:progresso:v1']` (versão antiga do jogo), as lições `l1` a `l4` viram `u01l01` a `u01l04`. Acontece uma vez só.
+
+## Como testar
 ```
+node tools/curso/teste-jogo.js            tudo (leva uns 4 minutos); o mesmo: npm run teste:jogo
+node tools/curso/teste-jogo.js --ajuda    todas as opções
+```
+Precisa de Node 18+ e Playwright com Chromium (`npm i -D playwright` e `npx playwright install chromium`). O axe-core é opcional (`AXE_JS=caminho/axe.min.js`).
 
-Campos de cada tipo (copie um exemplo pronto da **Lição 1**, ela tem um de cada):
-- `quiz`: `enunciado`, `codigo`, `opcoes` (**a primeira é a certa**; o site embaralha), `explicacao`.
-- `bug`: `enunciado`, `linhas`, `linhaErrada` (a linha que o Python aponta, começando em 1), `opcoes` (3; **a primeira é a correção certa**), `erro`, `porque`, `explicacao`.
-- `monte`: `enunciado`, `saida`, `linhas` (**na ordem certa**; o site embaralha), `explicacao`.
-- `lacuna`: `enunciado`, `codigo` com `{1}`, `{2}`..., `banco` (palavras), `respostas` (na ordem dos buracos), `saida`, `explicacao`.
-- `pares`: `enunciado`, `pares` (`["esquerda", "direita"]`), `explicacao`.
-- Se o código usa `input()`, acrescente `entrada: ["o que a pessoa digita"]` (só serve para a conferência).
+O teste sobe o próprio servidor, **joga todas as lições** usando o gabarito, e confere erros, teclado, rotas, ajustes, migração, offline e acessibilidade, em celular (390×844 e 360×640) e desktop (1280×800), com **zero erros no console**. Sai com código 1 se algo falhar. `--fotos PASTA` salva as capturas de tela.
 
-**Regra de ouro:** cada exercício precisa ter **uma única resposta certa**.
-
-## Se errar
-- Se faltar vírgula, aspas ou um campo, o site **não fica em branco**: mostra uma caixa com o que corrigir ("Tem algo para corrigir nas lições" ou "O site não conseguiu abrir").
-- Essa conferência só pega campo faltando e erro de digitação. **Ela não confere se o Python do exercício está certo.**
-- Para voltar atrás: no GitHub, abra o arquivo, clique em **History**, abra a versão anterior e copie de volta.
-- O zip do projeto (`codivara-projeto.zip`, que o Claude entregou) tem um verificador que roda cada exercício no Python de verdade e testa todas as ordens/combinações. Precisa de Python e Node no computador.
-
-## O que não foi verificado
-- Testado só no Chromium automatizado (Chrome/Edge). Não foi testado em iPhone/Safari, Firefox nem Android de verdade, nem com leitor de tela real.
-- O código que o aluno digita não é executado (não há campo de digitar código): as respostas são conferidas contra as escritas na lição.
-- A sequência diária depende do relógio do aparelho. O botão "voltar" do navegador sai do jogo.
-- A mensagem de erro do Python mostrada é a das versões 3.11 a 3.13.
+**Não foi testado:** iPhone/Safari, Firefox e Android de verdade, leitor de tela real, sincronização com a nuvem (Firebase) e áudio. O tema claro e o automático só foram vistos no Chromium.

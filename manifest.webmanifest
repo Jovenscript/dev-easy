@@ -17,6 +17,6 @@
   "shortcuts": [
     { "name": "Anotações", "url": "./#/notas" },
     { "name": "Marcadores", "url": "./#/marcadores" },
-    { "name": "Jogos", "url": "./jogos/" }
+    { "name": "ENIAC", "short_name": "ENIAC", "url": "./#/jogos" }
   ]
 }

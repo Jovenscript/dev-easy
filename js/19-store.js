@@ -3,10 +3,11 @@
    v = null quer dizer "apagado" (o registro fica guardado para o apagamento também ser sincronizado).
    Quando dois aparelhos se encontram, para cada item vence o registro mais novo.
    Grupos:  done = fichas que você entendeu · fav = favoritas · note = anotações (uma por ficha)
-            mark = marcadores "onde parei" · resume = o último ponto em que você estava.
+            mark = marcadores "onde parei" · resume = o último ponto em que você estava
+            jogo = progresso do ENIAC (lições, dias de prática, conquistas e ajustes; veja js/30-jogo-2-estado.js).
    As preferências de voz (velocidade, voz do aparelho...) ficam só neste aparelho, em STORE.loc. */
 const STORE=(function(){
-  var KEY='dev-easy-v1',NS=['done','fav','note','mark','resume'];
+  var KEY='dev-easy-v1',NS=['done','fav','note','mark','resume','jogo'];
   var st={reg:{},dirty:{},loc:{},lastU:0},subs=[],saveT=0;
   NS.forEach(function(n){st.reg[n]={}});
   function js(v){return JSON.stringify(v===undefined?null:v)}

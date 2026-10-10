@@ -158,16 +158,7 @@ h1{letter-spacing:.005em}
 .cont2{margin-bottom:6px}
 .marks-view .cont2{margin-top:6px}
 
-/* ----- atalho para a página de jogos (painel) ----- */
-.jogos-cta{display:flex;align-items:center;gap:14px;padding:14px 16px;color:var(--ink);text-decoration:none;transition:border-color .15s,background .15s}
-.jogos-cta:hover{border-color:var(--line2);background:var(--panel2)}
-.jogos-cta .jc-ic{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:var(--accent-soft);color:var(--accent);flex:none}
-.jogos-cta .jc-ic .ic{width:26px;height:26px}
-.jogos-cta .jc-t{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-.jogos-cta .jc-t b{font:600 21px/1.1 var(--fd)}
-.jogos-cta .jc-t small{color:var(--muted);font-size:13.5px;line-height:1.35}
-.jogos-cta .jc-b{flex:none}
-@media (max-width:420px){.jogos-cta .jc-b{display:none}}
+/* o cartão do ENIAC no painel está em jogo.css (.jg-cta) */
 
 /* ----- conta ----- */
 .grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));margin-top:16px;align-items:start}
