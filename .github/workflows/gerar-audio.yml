@@ -24,10 +24,10 @@ on:
         type: string
         default: ''
       vozes_para_ouvir:
-        description: 'Modo 2: vozes para comparar, separadas por vírgula'
+        description: 'Modo 2: escreva todas (as 30 vozes, uns 15 centavos de dólar) ou nomes separados por vírgula'
         required: false
         type: string
-        default: 'Kore,Charon,Sulafat,Achird,Erinome,Sadaltager'
+        default: 'todas'
       fichas_de_teste:
         description: 'Modo 3: fichas para testar (até 6), separadas por vírgula'
         required: false

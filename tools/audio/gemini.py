@@ -7,6 +7,7 @@ Usa só a biblioteca padrão do Python, mais numpy (volume) e ffmpeg (MP3). Pass
 
   python3 tools/audio/gemini.py --modo testar-chave                         # 1 frase curta: confere chave, modelo e formato da resposta
   python3 tools/audio/gemini.py --modo amostras --voz Kore,Charon           # um trecho lido por várias vozes  -> audio-teste/
+  python3 tools/audio/gemini.py --modo amostras --voz todas                 # as 30 vozes do Google (+ tenta a Capella) -> audio-teste/
   python3 tools/audio/gemini.py --modo fichas --destino teste --ids backend # fichas inteiras de teste          -> audio-teste/fichas/
   python3 tools/audio/gemini.py --modo fichas --ids all                     # todas (só o que falta ou mudou)   -> audio/
   python3 tools/audio/gemini.py --modo guardar                              # atualiza js/18-audiomap.js e envia ao GitHub
@@ -37,6 +38,16 @@ VOZES_AMOSTRA = ['Kore', 'Charon', 'Sulafat', 'Achird', 'Erinome', 'Sadaltager']
 VOZES = ['Zephyr', 'Puck', 'Charon', 'Kore', 'Fenrir', 'Leda', 'Orus', 'Aoede', 'Callirrhoe', 'Autonoe', 'Enceladus', 'Iapetus', 'Umbriel', 'Algieba', 'Despina',
          'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia', 'Achernar', 'Alnilam', 'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix',
          'Sadachbia', 'Sadaltager', 'Sulafat']
+# como o Google descreve cada voz (inglês) + tradução curta; aparece na página de teste para ajudar a escolher
+DESC_VOZ = {'Zephyr': ('Bright', 'brilhante'), 'Puck': ('Upbeat', 'animada'), 'Charon': ('Informative', 'informativa'), 'Kore': ('Firm', 'firme'),
+            'Fenrir': ('Excitable', 'empolgada'), 'Leda': ('Youthful', 'jovem'), 'Orus': ('Firm', 'firme'), 'Aoede': ('Breezy', 'leve'),
+            'Callirrhoe': ('Easy-going', 'tranquila'), 'Autonoe': ('Bright', 'brilhante'), 'Enceladus': ('Breathy', 'com respiração'),
+            'Iapetus': ('Clear', 'clara'), 'Umbriel': ('Easy-going', 'tranquila'), 'Algieba': ('Smooth', 'suave'), 'Despina': ('Smooth', 'suave'),
+            'Erinome': ('Clear', 'clara'), 'Algenib': ('Gravelly', 'rouca'), 'Rasalgethi': ('Informative', 'informativa'), 'Laomedeia': ('Upbeat', 'animada'),
+            'Achernar': ('Soft', 'macia'), 'Alnilam': ('Firm', 'firme'), 'Schedar': ('Even', 'uniforme'), 'Gacrux': ('Mature', 'madura'),
+            'Pulcherrima': ('Forward', 'direta'), 'Achird': ('Friendly', 'amigável'), 'Zubenelgenubi': ('Casual', 'casual'), 'Vindemiatrix': ('Gentle', 'gentil'),
+            'Sadachbia': ('Lively', 'viva'), 'Sadaltager': ('Knowledgeable', 'entendida'), 'Sulafat': ('Warm', 'calorosa')}
+VOZ_SONDA = 'Capella'           # voz do aplicativo Gemini (não está na lista oficial da API); em "todas" eu tento mesmo assim, para ver se a API já passou a aceitar
 ESPERAS = [int(x) for x in os.environ.get('GEMINI_ESPERAS', '20,60,120,240').split(',') if x.strip() != '']
 WPM_MIN, WPM_MAX = 95, 260      # fora disso o áudio é suspeito (cortado, muito lento, repetindo)
 MARCO = 'audio-piper-original'  # marca (tag) do GitHub com o áudio antigo, para dar para voltar
@@ -359,8 +370,12 @@ def escrever_pagina_teste(spoken_path):
     if am:
         h.append('<h2>1. O mesmo trecho em %d vozes</h2><p>Trecho da ficha “%s”. Repare em como ela fala “back-end”.</p><blockquote>%s</blockquote><ul>'
                  % (len(am['vozes']), html.escape(titulo_ficha(spoken, am.get('ficha', ''))), html.escape(am['texto'])))
+        if len(am['vozes']) > 8:
+            h.append('<p>Ouça uma por uma e <b>anote o nome</b> da que mais se parece com a voz que você quer (pode anotar 2 ou 3). Embaixo do nome está como o Google descreve cada voz.</p>')
         for v in am['vozes']:
-            h.append('<li><div class="nome"><b>%s</b></div><audio controls preload="none" src="%s.mp3"></audio></li>' % (html.escape(v), html.escape(v)))
+            d = DESC_VOZ.get(v)
+            h.append('<li><div class="nome"><b>%s</b>%s</div><audio controls preload="none" src="%s.mp3"></audio></li>'
+                     % (html.escape(v), (' <small>%s · %s</small>' % (d[0], d[1])) if d else '', html.escape(v)))
         h.append('</ul><p><small>Modelo %s · gerado em %s</small></p>' % (html.escape(am['modelo']), html.escape(am['quando'])))
     if fichas:
         h.append('<h2>2. Fichas inteiras</h2><p>Para ver se a voz se mantém bem do começo ao fim.</p><ul>')
@@ -403,12 +418,19 @@ def modo_testar(a, chave):
     resumo_md(['### Teste da chave', '', 'Funcionou: modelo `%s`, voz `%s`, %.1f s de áudio.' % (modelo, voz, len(x) / sr), '', 'Próximo passo: rode de novo com o modo **2-ouvir-vozes**.'])
     return 0
 
+def vozes_pedidas(txt):
+    """'todas' = as 30 vozes da lista oficial; senão os nomes separados por vírgula (vazio = as 6 de sempre). Devolve (lista, todas?)."""
+    itens = [v for v in (txt or '').split(',') if v.strip()]
+    if any(v.strip().lower() in ('todas', 'todos', 'all', 'tudo') for v in itens): return list(VOZES), True
+    return ([norm_voz(v) for v in itens] or list(VOZES_AMOSTRA)), False
+
 def modo_amostras(a, chave):
     modelo, _, estilo = cfg_de(a, voz_em_uso())
-    vozes = [norm_voz(v) for v in (a.voz or '').split(',') if v.strip()] or VOZES_AMOSTRA
+    vozes, todas = vozes_pedidas(a.voz)
+    if todas: vozes = [VOZ_SONDA] + vozes
     spoken = ler_spoken(a.spoken)
     ficha = next((e for e in spoken if e['id'] == 'backend'), spoken[0])
-    texto = texto_final(ficha['segs'][:8])
+    texto = texto_final(ficha['segs'][:4 if todas else 8])   # com 30 vozes o trecho é mais curto: dá para ouvir tudo em poucos minutos
     out = os.path.join(RAIZ, 'audio-teste'); os.makedirs(out, exist_ok=True)
     log('Amostras: %d vozes, trecho da ficha "%s" (%d letras).' % (len(vozes), ficha['id'], len(texto)))
     feitas, seg = [], 0.0
@@ -416,7 +438,10 @@ def modo_amostras(a, chave):
         if i: time.sleep(a.espera)
         try: x, sr = sintetizar(chave, modelo, v, estilo, texto, a.api)
         except ErroApi as e:
-            if e.status == 400 and not e.chave and not e.quota_dia and not e.transitorio: log('  ✗ voz "%s": %s (nome de voz errado?)' % (v, e)); continue
+            if e.status == 400 and not e.chave and not e.quota_dia and not e.transitorio:
+                if todas and v == VOZ_SONDA: log('  ✗ %s: a API do Gemini não aceitou essa voz (ela só existe no aplicativo do Gemini). Sigo com as outras %d.' % (v, len(vozes) - 1))
+                else: log('  ✗ voz "%s": %s (nome de voz errado?)' % (v, e))
+                continue
             raise
         seg += len(x) / sr
         final = os.path.join(out, v + '.mp3'); d, tmp = processar(x, sr, a.kbps, final); os.replace(tmp, final); feitas.append(v)
